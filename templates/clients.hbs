@@ -1,0 +1,24 @@
+<main class="main-content">
+    <div class="client-list">
+        {{#each clients}}
+        <a href="/clientProfile/{{this.id}}">
+            <div class="client-card">
+                <span class="client-name">{{this.firstName}} {{this.lastName}}</span> - <span
+                    class="client-phone">{{this.phone}}</span>
+            </div>
+        </a>
+        {{/each}}
+
+    </div>
+
+    <!-- Пагинация -->
+    {{#if pages}}
+    <div class="pagination">
+        <a href="?page={{minusOne page}}"><button class="page-button" {{#if (equals page 1)}}disabled{{/if}}>&laquo;</button></a>
+        {{#each (getPageNumbers pages)}}
+        <a href="?page={{this}}"><button class="page-button {{#if (equals this ../page)}}active{{/if}}">{{this}}</button></a>
+        {{/each}}
+        <a href="?page={{plusOne page}}"><button class="page-button" {{#if (equals page pages)}}disabled{{/if}}>&raquo;</button></a>
+    </div>
+    {{/if}}
+</main>

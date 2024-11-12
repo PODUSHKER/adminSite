@@ -1,0 +1,158 @@
+<main class="main-content">
+    <div class="client-profile-container">
+        <!-- Основная информация о клиенте -->
+        <h1>{{client.firstName}} {{client.lastName}}</h1>
+
+        <form action="/clientProfile/{{client.id}}" method="post">
+            <label for="firstName" class="profile-label">Имя:</label>
+            <input type="text" id="firstName" name="firstName" class="profile-input" value="{{client.firstName}}">
+
+            <label for="lastName" class="profile-label">Фамилия:</label>
+            <input type="text" id="lastName" name="lastName" class="profile-input" value="{{client.lastName}}">
+
+            <label for="phone" class="profile-label">Телефон:</label>
+            <input type="text" id="phone" name="phone" class="profile-input" value="{{client.phone}}">
+
+            <label for="telegramId" class="profile-label">Телеграм:</label>
+            <input type="text" id="telegramId" name="telegramId" class="profile-input" value="@{{client.telegramId}}">
+
+            <button type="submit" class="btn profile-btn">Изменить</button>
+            {{#if client.isBlock}}
+            <button type="button" class="btn profile-btn unlock-btn lock-btn">Разблокировать</button>
+            {{else}}
+            <button type="button" class="btn profile-btn block-btn lock-btn">Заблокировать</button>
+            {{/if}}
+        </form>
+
+        <!-- Раздел подписки -->
+        {{#if promo}}
+        <div class="subscription-section">
+            <h2>Статус: <span class="subscription-status">{{#if promo.isEnabled}}Активна{{else}}Отключена{{/if}}</span>
+            </h2>
+            <div class="subscription-details">
+                <span class="subscription-name">{{promo.title}}</span>
+                <span class="subscription-end">До окончания: {{getDaysOver promo.endDate}} дней</span>
+            </div>
+
+            <div class="products-section">
+                {{#each products}}
+                <div class="product-item">
+                    <span>{{this.name}} - {{this.quantity}} шт.</span>
+                    <button type="button" id="{{this.id}}" class="btn deduct-btn">Списать</button>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+        {{else}}
+        <button type="button" class="btn subscription-btn">Оформить подписку</button>
+        {{/if}}
+
+        <!-- Раздел истории операций -->
+        {{#if operations}}
+        <div class="operations-history">
+            <h2>История операций</h2>
+            {{#each operations}}
+            <div class="operation-item">
+                <span>Дата: {{getTime this.createdAt}}</span>
+                <span>Товар: {{this.Product.name}}</span>
+                <span>Сотрудник: {{this.Worker.firstName}} {{this.Worker.lastName}}</span>
+            </div>
+            {{/each}}
+            <!-- Больше записей истории -->
+        </div>
+        {{/if}}
+    </div>
+</main>
+
+
+<script>
+    const subBtn = document.querySelector('.subscription-btn')
+    if (subBtn) {
+        subBtn.addEventListener('click', async (e) => {
+            const { subscription, cofe, cola } = await (await fetch('/api/createSubscriptionTool', { method: 'POST' })).json()
+
+            subBtn.outerHTML =
+                `
+                <div class="subscription-section">
+                    <h2>Статус: <span class="subscription-status">Активен</span></h2>
+                    <div class="subscription-details">
+                        <span class="subscription-name">${subscription.title}</span>
+                        <span class="subscription-end">До окончания: ${subscription.timeToLive} дней</span>
+                    </div>
+
+                    <div class="products-section">
+                        <div class="product-item">
+                            <span>${cofe.name} - ${cofe.quantity} шт.</span>
+                            <button type="button" id="${cofe.id}" class="btn deduct-btn">Списать</button>
+                        </div>
+                        <div class="product-item">
+                            <span>${cola.name} - ${cola.quantity} шт.</span>
+                            <button type="button" id="${cola.id}" class="btn deduct-btn">Списать</button>
+                        </div>
+                    </div>
+                </div>
+                `
+            const deductBtns = document.querySelectorAll('.deduct-btn')
+            for (let btn of deductBtns) {
+                btn.addEventListener('click', deductButtonHandler)
+            }
+
+        })
+        console.log(subBtn, 'penis')
+    }
+
+    const lockBtn = document.querySelector('.lock-btn')
+    lockBtn.addEventListener('click', async (e) => {
+        await fetch('/api/lockClientTool', { method: 'POST', })
+        location.reload()
+    })
+
+    const deductBtns = document.querySelectorAll('.deduct-btn')
+    if (deductBtns.length) {
+        for (let btn of deductBtns) {
+            btn.addEventListener('click', deductButtonHandler)
+        }
+    }
+
+    async function deductButtonHandler(e) {
+        e.preventDefault()
+        const history = document.querySelector('.operations-history')
+        const { name, quantity, operation } = await (await fetch('/api/deleteOneProduct', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: e.target.id })
+        })).json()
+        e.target.previousElementSibling.innerHTML = `${name} - ${quantity} шт.`
+        if (history) {
+            history.insertAdjacentHTML('beforeend',
+                `
+            <div class="operation-item">
+                <span>Дата: ${operation.createdAt}</span>
+                <span>Товар: ${operation.Product.name}</span>
+                <span>Сотрудник: ${operation.Worker.firstName} ${operation.Worker.lastName}</span>
+            </div>
+            `)
+        }
+        else {
+            const mainContainer = document.querySelector('.client-profile-container')
+            mainContainer.insertAdjacentHTML('beforeend',
+                `
+            <div class="operations-history">
+                <h2>История операций</h2>
+                <div class="operation-item">
+                    <span>Дата: ${operation.createdAt}</span>
+                    <span>Товар: ${operation.Product.name}</span>
+                    <span>Сотрудник: ${operation.Worker.firstName} ${operation.Worker.lastName}</span>
+                </div>
+            </div>
+            `)
+        }
+        if (quantity < 1) {
+            e.target.previousElementSibling.parentElement.outerHTML = ''
+        }
+        console.log('response. end btndeduct')
+    }
+
+</script>

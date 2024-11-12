@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/{{cssFile}}.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Вход в систему</h1>
+        
+        <!-- Форма авторизации -->
+        <form id="authForm" action="/auth" method="POST">
+            <label for="phone-number" class="auth-label">Номер телефона:</label>
+            <input type="text" id="phone-number" name="phone" placeholder="Введите номер телефона" class="auth-input">
+
+            <label for="password" class="auth-label">Пароль:</label>
+            <input type="password" id="password" name="password" placeholder="Введите пароль" class="auth-input">
+
+            <button type="submit" class="btn auth-btn">Войти</button>
+        </form>
+    </div>
+</body>
+</html>

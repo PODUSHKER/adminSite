@@ -1,0 +1,12 @@
+        <main class="main-content">
+            <div class="employee-list">
+                {{#each workers}}
+                <a href="/workerProfile/{{this.id}}">
+                    <div class="employee-card">
+                        <span class="employee-name">{{this.firstName}} {{this.lastName}}</span><span class="employee-phone">{{this.phone}}</span>
+                    </div>
+                </a>
+                {{/each}}
+                
+            </div>
+        </main>

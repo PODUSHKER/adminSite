@@ -1,0 +1,36 @@
+<main class="main-content">
+            <div class="form-container">
+                <!-- Заголовок страницы -->
+                <h1>Создать нового сотрудника</h1>
+
+                <!-- Форма для создания сотрудника -->
+                <form class="employee-form" method="post" action="">
+                    <label for="first-name">Имя</label>
+                    <input type="text" id="first-name" name="firstName" required>
+
+                    <label for="last-name">Фамилия</label>
+                    <input type="text" id="last-name" name="lastName" required>
+
+                    <label for="phone">Номер телефона</label>
+                    <input type="tel" id="phone" name="phone" required>
+
+                    <label for="placeWork">Название магазина</label>
+                    <select name="placeWork" id="placeWork" style="margin-bottom: 50px" required>
+                        {{#each placeWorks}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+
+                    <label for="telegram">Телеграм (необязательно)</label>
+                    <input type="text" id="telegram" name="telegramId">
+
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+
+                    <label for="confirm-password">Подтверждение пароля</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+
+                    <button type="submit" class="create-button">Создать</button>
+                </form>
+            </div>
+        </main>

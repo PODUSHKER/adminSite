@@ -1,0 +1,74 @@
+<main class="main-content">
+    <div class="find-phone-container">
+        <h1>Поиск по номеру телефона</h1>
+
+        <!-- Блок для поиска по номеру телефона -->
+        <div id="phone-search-block">
+            <form class="phone-search-form" action="" method="get">
+                <label for="phone" class="reg-label">Введите номер телефона:</label>
+                <input type="text" id="phone" name="phone" placeholder="+7 (___) ___-__-__" class="reg-input" required>
+                <button type="submit" class="btn reg-btn">Найти</button>
+            </form>
+        </div>
+
+
+    </div>
+</main>
+
+<script>
+
+
+    const searchForm = document.querySelector('.phone-search-form')
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const phone = new FormData(e.srcElement).get('phone')
+        const response = await (await fetch('/api/findClientTool', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone: phone })
+        })).json()
+        const formContainer = document.querySelector('.find-phone-container')
+        if (response.success) {
+            formContainer.innerHTML = response.html
+            const resendCodeButton = document.querySelector('.sms-btn')
+            const confirmCodeButton = document.querySelector('.reg-btn')
+            resendCodeButton.addEventListener('click', resendHandler)
+            confirmCodeButton.addEventListener('click', confirmCodeHandler)
+
+        }
+        else {
+            if (formContainer.children[0].tagName !== 'P') {
+                formContainer.insertAdjacentHTML('afterbegin', '<p style="color:#f00">Клиент не найден!</p>')
+            }
+        }
+    })
+
+    async function resendHandler(e) {
+        const response = await (await fetch('/api/resendCodeTool', { method: 'post', })).json()
+        document.getElementById('secretCode').innerHTML = response['code'];
+    }
+
+    async function confirmCodeHandler(e) {
+        const inCode = document.getElementById('smsCode')
+        console.log('response start', inCode)
+        const rawResponse = await fetch('/api/confirmCodeTool', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code: inCode.value })
+        })
+        if (!rawResponse.redirected) {
+            console.log(rawResponse)
+            console.log('im here')
+            const response = await rawResponse.json()
+            document.getElementById('attemptCount').innerHTML = response['attemps']
+        }
+        else{
+            location.href = rawResponse.url
+        }
+    }
+
+</script>

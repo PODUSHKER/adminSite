@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/{{cssFile}}.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2 class="sidebar-title"><a href="/">Мой Сайт</a></h2>
+            <nav class="menu">
+                {{#if (isAdmin thisWorker.role)}}
+                <a href="/createWorker">Добавить сотрудника</a>
+                <a href="/createPlaceWork">Добавить место работы</a>
+                <a href="/clients">Клиенты</a>
+                <a href="/workers">Сотрудники</a>
+                {{else}}
+                <a href="/registerClients">Зарегистрировать</a>
+                {{/if}}
+
+            </nav>
+            <a href="/logout" class="logout">Выйти</a>
+        </aside>
+
+        {{{ body }}}
+
+        </div>
+</body>
+</html>
