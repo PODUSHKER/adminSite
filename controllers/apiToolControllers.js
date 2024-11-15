@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const { Worker, Client, TempData, Promo, Product, PromoProduct, Operation } = require('../models/associations.js')
 const genCode = require('../utils/genCode.js')
-
+const bot = require('../bots/confirmBot.js')
 
 exports.updateWorkerTool = async (request, response) => {
     const { firstName, lastName, phone, placeWork } = request.body
@@ -38,20 +38,21 @@ exports.findClientTool = async (request, response) => {
     const message = { success: false, html: '', code: '' }
     if (client) {
         const code = genCode()
+
+        bot.sendMessage(client.telegramUserId, `Код подтверждения входа: ${code}`)
+
         let hasTempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'] } })
         if (!hasTempData) {
-            hasTempData = new TempData({ WorkerId: request.body['workerId'], ClientId: client.id })
+            hasTempData = new TempData({ WorkerId: request.body['workerId'], ClientId: client.id})
         }
-        hasTempData.code = code;
+        hasTempData.findCode = code;
         await hasTempData.save()
 
         message['success'] = true
-        message['code'] = code
         message['html'] =
             `
         <div id="sms-code-block">
             <label for="smsCode" class="reg-label">Введите SMS-код:</label>
-            <p id="secretCode">${code}</p>
             <input type="text" id="smsCode" name="smsCode" placeholder="Введите код" class="reg-input">
 
             <div class="sms-actions">
@@ -69,7 +70,11 @@ exports.findClientTool = async (request, response) => {
 exports.resendCodeTool = async (request, response) => {
     const code = genCode()
     const worker = await Worker.findOne({ where: { id: request.body['workerId'] } })
-    await TempData.update({ code }, { where: { WorkerId: worker.id } })
+    const tempData = await TempData.findOne({ where: { WorkerId: worker.id }, include: Client })
+    tempData.findCode = code;
+    await tempData.save()
+    const telegramUserId = tempData.Client.telegramUserId;
+    bot.sendMessage(telegramUserId, `Код подтверждения входа: ${code}`)
     response.json({ code })
 }
 
@@ -77,7 +82,7 @@ exports.confirmCodeTool = async (request, response) => {
     const { workerId, code } = request.body
     const tempData = await TempData.findOne({ where: { WorkerId: workerId } })
     if (tempData.attempts) {
-        if (tempData.code !== code) {
+        if (tempData.findCode !== code) {
             tempData.attempts--
             await tempData.save()
             response.json({ attemps: tempData.attempts })
@@ -85,12 +90,6 @@ exports.confirmCodeTool = async (request, response) => {
         }
         tempData.isActive = true
         await tempData.save()
-        const seconds = Number(process.env.TIMEOUT_SECONDS)
-        console.log(seconds)
-        setTimeout(async () => {
-            await TempData.destroy({ where: { id: tempData.id } })
-        }, seconds * 1000)
-        //TODO check promo timeout
         response.redirect(`/clientProfile/${tempData['ClientId']}`)
         return
     }
@@ -132,14 +131,57 @@ exports.createSubscriptionTool = async (request, response) => {
 exports.deleteOneProduct = async (request, response) => {
     const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true }, include: [Client, Worker] })
     if (tempData) {
-        const product = await Product.findOne({ where: { id: request.body['id'] } })
+        const product = await Product.findOne({ where: { id: tempData.ProductId } })
         product.quantity--;
         await product.save()
-        console.log('im in product information')
-        console.log(tempData)
-        await Operation.create({ClientId: tempData.Client.id, WorkerId: tempData.Worker.id, ProductId: product.id})
-        const operation = {Worker: tempData.Worker, Product: product, createdAt: new Date().toLocaleDateString()}
-        response.json({ name: product.name, quantity: product.quantity, operation})
+        await Operation.create({ ClientId: tempData.ClientId, WorkerId: tempData.WorkerId, ProductId: tempData.ProductId })
+        tempData.ProductId = null;
+        tempData.deductCode = null;
+        await tempData.save()
+        const operation = { Worker: tempData.Worker, Product: product, createdAt: new Date().toLocaleDateString() }
+        response.json({ name: product.name, quantity: product.quantity, operation })
+    }
+    response.end()
+}
+
+
+exports.updateDeductCode = async (request, response) => {
+    const { workerId, productId } = request.body;
+    const code = genCode()
+    const tempData = await TempData.findOne({ where: { WorkerId: workerId, isActive: true }, include: [Client, Product] })
+    const product = productId ? await Product.findOne({ where: { id: productId } }) : tempData.Product
+    if (tempData.ProductId !== product.id) {
+        tempData.ProductId = product.id
+    }
+    tempData.deductCode = code
+    await tempData.save()
+
+    bot.sendMessage(tempData.Client.telegramUserId, `Товар: ${product.name}\nКод подтверждения списания: ${code}`)
+
+}
+
+exports.confirmDeductCode = async (request, response) => {
+    console.log('in server confirm')
+    const { workerId, inCode } = request.body
+    const result = { isSuccess: false, productId: '' }
+    const tempData = await TempData.findOne({ where: { WorkerId: workerId, isActive: true } })
+    console.log('tempData', tempData)
+    console.log('workerId', workerId)
+    console.log('inCode', inCode)
+    if (tempData) {
+        if (tempData.deductCode === inCode) {
+            result.isSuccess = true
+            result.productId = tempData.ProductId
+            await tempData.save()
+        }
+    }
+    response.json(result)
+}
+
+exports.deleteTempData = async (request, response) => {
+    const tempData = await TempData.findOne({where: {WorkerId: request.body['workerId'], isActive: true}})
+    if(tempData){
+        await TempData.destroy({where: {id: tempData}})
     }
     response.end()
 }

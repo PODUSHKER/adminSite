@@ -1,5 +1,6 @@
 const { defaultValueSchemable } = require('sequelize/lib/utils')
 const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { all } = require('../routes/mainRoutes.js')
 
 const TempData = sequelize.define('TempData', {
 
@@ -15,14 +16,19 @@ const TempData = sequelize.define('TempData', {
         defaultValue: 5
     },
 
-    code: {
+    findCode: {
         type: DataTypes.STRING,
         allowNull: true
     },
     isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
-    }
+        defaultValue: false
+    },
+    deductCode: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+
 
 })
 

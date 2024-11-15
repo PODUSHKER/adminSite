@@ -2,6 +2,8 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { Client, PlaceWork, Worker, TempData, Promo, Product, PromoProduct, Operation } = require('../models/associations.js')
+const bot = require('../bots/confirmBot.js')
+
 
 exports.getMain = async (request, response) => {
     const worker = response.locals['thisWorker']
@@ -50,6 +52,12 @@ exports.getClients = async (request, response) => {
 }
 exports.getClientProfile = async (request, response) => {
     const client = await Client.findOne({ where: { id: request.params['id'] } })
+    if (response.locals['thisWorker'].role === 'Admin') {
+        const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], ClientId: client.id, isActive: true } })
+        if (!tempData) {
+            await new TempData({ WorkerId: request.body['workerId'], ClientId: client.id, isActive: true }).save()
+        }
+    }
     let products, promo, promoProduct;
     if (client['PromoId']) {
         promo = await Promo.findOne({ where: { id: client.PromoId } })
@@ -78,7 +86,8 @@ exports.getClientProfile = async (request, response) => {
     let operations = await Operation.findAll({ where: { ClientId: client.id }, include: [Worker, Product] })
     operations = operations.length ? operations : null;
 
-    response.render('clientProfile.hbs', { cssFile: 'clientProfile', title: 'Клиенты', client, products, promo, operations })
+    const seconds = Number(process.env.TIMEOUT_SECONDS)
+    response.render('clientProfile.hbs', { cssFile: 'clientProfile', title: 'Клиенты', client, products, promo, operations, seconds})
 }
 
 exports.postClientProfile = async (request, response) => {
@@ -156,16 +165,24 @@ exports.getRegisterClients = (request, response) => {
 
 exports.postRegisterClients = async (request, response) => {
     const { firstName, lastName, phone, telegramId, workerId } = request.body
-    const client = await new Client({ firstName, lastName, phone, telegramId, WorkerId: workerId }).save()
+
+    const client = await Client.findOne({ where: { telegramId } })
     const worker = response.locals['thisWorker']
-    let tempData = await TempData.findOne({ where: { isActive: true } })
-    if (!tempData) {
-        tempData = await new TempData({ ClientId: client.id, WorkerId: worker.id, isActive: true }).save()
-        const seconds = Number(process.env.TIMEOUT_SECONDS)
-        setTimeout(async (request, response) => {
-            await TempData.destroy({ where: { id: tempData.id } })
-        }, seconds * 1000)
-        response.redirect(`/clientProfile/${client.id}`)
+    if (client) {
+        if (!client.WorkerId) {
+            client.phone = phone
+            client.WorkerId = workerId
+            client.firstName = firstName
+            client.lastName = lastName
+            await client.save()
+            bot.sendMessage(client.telegramUserId, 'Вы успешно зарегистрированы!')
+        }
+
+        let tempData = await TempData.findOne({ where: { isActive: true } })
+        if (!tempData) {
+            tempData = await new TempData({ ClientId: client.id, WorkerId: worker.id, isActive: true }).save()
+            response.redirect(`/clientProfile/${client.id}`)
+        }
     }
     response.redirect(`/`)
 }

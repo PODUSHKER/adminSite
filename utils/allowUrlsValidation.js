@@ -13,17 +13,30 @@ async function allowUrlsValidation(request, response, next) {
     if (request.body['workerId']) {
         const activeTempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true } })
         if (activeTempData) {
-            workerUrls.push(`/clientProfile/${activeTempData['ClientId']}`)
-            workerUrls.push('/api/lockClientTool')
-            workerUrls.push('/api/createSubscriptionTool')
-            workerUrls.push('/api/deleteOneProduct')
+            const allowUrls = [
+                `/clientProfile/${activeTempData['ClientId']}`,
+                '/api/lockClientTool',
+                '/api/createSubscriptionTool',
+                '/api/deleteOneProduct',
+                '/api/updateDeductCode',
+                '/api/confirmDeductCode'
+            ]
+            console.log('is active tempdata')
+            if (!allowUrls.includes(request.originalUrl)) {
+                await TempData.destroy({ where: { id: activeTempData.id } })
+            }
+            else {
+                allowUrls.forEach(el => {
+                    workerUrls.push(el)
+                })
+            }
         }
     }
 
 
     const worker = response.locals['thisWorker']
     if (worker && worker.role === "Worker") {
-        if (workerUrls.includes(request.url)) {
+        if (workerUrls.includes(request.originalUrl)) {
             next()
             return
         }

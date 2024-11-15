@@ -1,4 +1,5 @@
 <main class="main-content">
+    <hidden value="{{seconds}}" class="timeout-seconds"></hidden>
     <div class="client-profile-container">
         <!-- Основная информация о клиенте -->
         <h1>{{client.firstName}} {{client.lastName}}</h1>
@@ -37,8 +38,8 @@
             <div class="products-section">
                 {{#each products}}
                 <div class="product-item">
-                    <span>{{this.name}} - {{this.quantity}} шт.</span>
-                    <button type="button" id="{{this.id}}" class="btn deduct-btn">Списать</button>
+                    <span><span class="product-name">{{this.name}}</span> - {{this.quantity}} шт.</span>
+                    <button type="button" id="product{{this.id}}" class="btn deduct-btn">Списать</button>
                 </div>
                 {{/each}}
             </div>
@@ -62,97 +63,17 @@
         </div>
         {{/if}}
     </div>
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-content">
+            <h2>Введите код</h2>
+            <input type="text" id="verification-code" placeholder="Введите код" class="input-field">
+            <div class="button-group">
+                <button id="resend-code" class="btn">Отправить ещё раз</button>
+                <button id="confirm-code" class="btn confirm-btn">Подтвердить</button>
+            </div>
+        </div>
+    </div>
 </main>
 
 
-<script>
-    const subBtn = document.querySelector('.subscription-btn')
-    if (subBtn) {
-        subBtn.addEventListener('click', async (e) => {
-            const { subscription, cofe, cola } = await (await fetch('/api/createSubscriptionTool', { method: 'POST' })).json()
-
-            subBtn.outerHTML =
-                `
-                <div class="subscription-section">
-                    <h2>Статус: <span class="subscription-status">Активен</span></h2>
-                    <div class="subscription-details">
-                        <span class="subscription-name">${subscription.title}</span>
-                        <span class="subscription-end">До окончания: ${subscription.timeToLive} дней</span>
-                    </div>
-
-                    <div class="products-section">
-                        <div class="product-item">
-                            <span>${cofe.name} - ${cofe.quantity} шт.</span>
-                            <button type="button" id="${cofe.id}" class="btn deduct-btn">Списать</button>
-                        </div>
-                        <div class="product-item">
-                            <span>${cola.name} - ${cola.quantity} шт.</span>
-                            <button type="button" id="${cola.id}" class="btn deduct-btn">Списать</button>
-                        </div>
-                    </div>
-                </div>
-                `
-            const deductBtns = document.querySelectorAll('.deduct-btn')
-            for (let btn of deductBtns) {
-                btn.addEventListener('click', deductButtonHandler)
-            }
-
-        })
-        console.log(subBtn, 'penis')
-    }
-
-    const lockBtn = document.querySelector('.lock-btn')
-    lockBtn.addEventListener('click', async (e) => {
-        await fetch('/api/lockClientTool', { method: 'POST', })
-        location.reload()
-    })
-
-    const deductBtns = document.querySelectorAll('.deduct-btn')
-    if (deductBtns.length) {
-        for (let btn of deductBtns) {
-            btn.addEventListener('click', deductButtonHandler)
-        }
-    }
-
-    async function deductButtonHandler(e) {
-        e.preventDefault()
-        const history = document.querySelector('.operations-history')
-        const { name, quantity, operation } = await (await fetch('/api/deleteOneProduct', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: e.target.id })
-        })).json()
-        e.target.previousElementSibling.innerHTML = `${name} - ${quantity} шт.`
-        if (history) {
-            history.insertAdjacentHTML('beforeend',
-                `
-            <div class="operation-item">
-                <span>Дата: ${operation.createdAt}</span>
-                <span>Товар: ${operation.Product.name}</span>
-                <span>Сотрудник: ${operation.Worker.firstName} ${operation.Worker.lastName}</span>
-            </div>
-            `)
-        }
-        else {
-            const mainContainer = document.querySelector('.client-profile-container')
-            mainContainer.insertAdjacentHTML('beforeend',
-                `
-            <div class="operations-history">
-                <h2>История операций</h2>
-                <div class="operation-item">
-                    <span>Дата: ${operation.createdAt}</span>
-                    <span>Товар: ${operation.Product.name}</span>
-                    <span>Сотрудник: ${operation.Worker.firstName} ${operation.Worker.lastName}</span>
-                </div>
-            </div>
-            `)
-        }
-        if (quantity < 1) {
-            e.target.previousElementSibling.parentElement.outerHTML = ''
-        }
-        console.log('response. end btndeduct')
-    }
-
-</script>
+<script src="/scripts/clientProfile.js"></script>

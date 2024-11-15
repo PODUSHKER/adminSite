@@ -11,15 +11,15 @@ const Client = sequelize.define('Client', {
     },
     firstName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     lastName: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     phone: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true
     },
     isBlock: {
@@ -28,8 +28,12 @@ const Client = sequelize.define('Client', {
     },
     telegramId: {
         type: DataTypes.STRING,
-        defaultValue: ''
+        allowNull: false
     },
+    telegramUserId: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
 })
 
 

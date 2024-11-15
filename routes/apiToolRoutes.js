@@ -16,7 +16,9 @@ apiToolRouter.post('/confirmCodeTool', apiToolControllers.confirmCodeTool)
 apiToolRouter.post('/lockClientTool', apiToolControllers.lockClientTool)
 apiToolRouter.post('/createSubscriptionTool', apiToolControllers.createSubscriptionTool)
 apiToolRouter.post('/deleteOneProduct', apiToolControllers.deleteOneProduct)
-
+apiToolRouter.post('/updateDeductCode', apiToolControllers.updateDeductCode)
+apiToolRouter.post('/confirmDeductCode', apiToolControllers.confirmDeductCode)
+apiToolRouter.post('/deleteTempData', apiToolControllers.deleteTempData)
 
 
 module.exports = apiToolRouter

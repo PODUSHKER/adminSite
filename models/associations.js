@@ -30,6 +30,9 @@ Operation.belongsTo(Worker)
 Client.hasMany(TempData);
 TempData.belongsTo(Client)
 
+Product.hasMany(TempData)
+TempData.belongsTo(Product)
+
 Client.hasMany(Operation)
 Operation.belongsTo(Client)
 
