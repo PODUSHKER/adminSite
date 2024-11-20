@@ -2,26 +2,38 @@ const bcrypt = require('bcrypt')
 const { Worker, Client, TempData, Promo, Product, PromoProduct, Operation } = require('../models/associations.js')
 const genCode = require('../utils/genCode.js')
 const bot = require('../bots/confirmBot.js')
+const { validationResult } = require('express-validator')
 
 exports.updateWorkerTool = async (request, response) => {
-    const { firstName, lastName, phone, placeWork } = request.body
-    const telegramId = request.body['telegramId'].replace(/@/g, '')
-    await Worker.update({ firstName, lastName, phone, placeWork, telegramId }, { where: { id: request.params['id'] } })
+    const errors = validationResult(request).errors
+    if (errors.length) {
+        response.cookie('errors', errors)
+    }
+    else {
+        const { firstName, lastName, phone, placeWork } = request.body
+        const telegramId = request.body['telegramId'].replace(/@/g, '')
+        await Worker.update({ firstName, lastName, phone, placeWork, telegramId }, { where: { id: request.params['id'] } })
+    }
     response.end()
 }
 
 
 exports.updateWorkerPasswordTool = async (request, response) => {
-    const saltGrain = Number(process.env.SALT_GRAIN)
-    const salt = await bcrypt.genSalt(saltGrain)
-    const hash = await bcrypt.hash(request.body['password'], salt)
-    await Worker.update({ password: hash }, { where: { id: request.params['id'] } })
+    const errors = validationResult(request).errors
+    if (errors.length) {
+        response.cookie('errors', errors)
+    }
+    else {
+        const saltGrain = Number(process.env.SALT_GRAIN)
+        const salt = await bcrypt.genSalt(saltGrain)
+        const hash = await bcrypt.hash(request.body['password'], salt)
+        await Worker.update({ password: hash }, { where: { id: request.params['id'] } })
+    }
     response.end()
 }
 
 
 exports.blockWorkerTool = async (request, response) => {
-    console.log('im in block', request.params['id'])
     await Worker.update({ isBlock: true }, { where: { id: request.params['id'] } })
     response.end()
 }
@@ -43,7 +55,7 @@ exports.findClientTool = async (request, response) => {
 
         let hasTempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'] } })
         if (!hasTempData) {
-            hasTempData = new TempData({ WorkerId: request.body['workerId'], ClientId: client.id})
+            hasTempData = new TempData({ WorkerId: request.body['workerId'], ClientId: client.id })
         }
         hasTempData.findCode = code;
         await hasTempData.save()
@@ -69,8 +81,8 @@ exports.findClientTool = async (request, response) => {
 
 exports.resendCodeTool = async (request, response) => {
     const code = genCode()
-    const worker = await Worker.findOne({ where: { id: request.body['workerId'] } })
-    const tempData = await TempData.findOne({ where: { WorkerId: worker.id }, include: Client })
+    const { workerId } = request.body
+    const tempData = await TempData.findOne({ where: { WorkerId: workerId }, include: Client })
     tempData.findCode = code;
     await tempData.save()
     const telegramUserId = tempData.Client.telegramUserId;
@@ -101,9 +113,9 @@ exports.confirmCodeTool = async (request, response) => {
 
 
 exports.lockClientTool = async (request, response) => {
-    const tempData = await TempData.findOne({ WorkerId: request.body['workerId'], isActive: true })
+    const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true }, include: Client })
     if (tempData) {
-        const client = await Client.findOne({ where: { id: tempData.ClientId } })
+        const client = tempData.Client
         client.isBlock = !Number(client.isBlock)
         await client.save()
     }
@@ -117,7 +129,7 @@ exports.createSubscriptionTool = async (request, response) => {
         const timeToLive = 30;
         const today = new Date()
         const endDate = today.setDate(today.getDate() + timeToLive)
-        const promo = await new Promo({ title: 'Стандарт', price: 1500, discount: 10, timeToLive, endDate }).save()
+        const promo = await new Promo({ title: 'Стандарт', price: 1500, discount: 10, timeToLive, endDate, WorkerId: tempData.WorkerId }).save()
         await Client.update({ PromoId: promo.id }, { where: { id: tempData.ClientId } })
         const cofe = await new Product({ name: 'Кофе' }).save()
         const cola = await new Product({ name: 'Кола' }).save()
@@ -129,9 +141,9 @@ exports.createSubscriptionTool = async (request, response) => {
 }
 
 exports.deleteOneProduct = async (request, response) => {
-    const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true }, include: [Client, Worker] })
+    const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true }, include: [Client, Worker, Product] })
     if (tempData) {
-        const product = await Product.findOne({ where: { id: tempData.ProductId } })
+        const product = tempData.Product
         product.quantity--;
         await product.save()
         await Operation.create({ ClientId: tempData.ClientId, WorkerId: tempData.WorkerId, ProductId: tempData.ProductId })
@@ -161,13 +173,9 @@ exports.updateDeductCode = async (request, response) => {
 }
 
 exports.confirmDeductCode = async (request, response) => {
-    console.log('in server confirm')
     const { workerId, inCode } = request.body
     const result = { isSuccess: false, productId: '' }
     const tempData = await TempData.findOne({ where: { WorkerId: workerId, isActive: true } })
-    console.log('tempData', tempData)
-    console.log('workerId', workerId)
-    console.log('inCode', inCode)
     if (tempData) {
         if (tempData.deductCode === inCode) {
             result.isSuccess = true
@@ -179,9 +187,9 @@ exports.confirmDeductCode = async (request, response) => {
 }
 
 exports.deleteTempData = async (request, response) => {
-    const tempData = await TempData.findOne({where: {WorkerId: request.body['workerId'], isActive: true}})
-    if(tempData){
-        await TempData.destroy({where: {id: tempData}})
+    const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true } })
+    if (tempData) {
+        await TempData.destroy({ where: { id: tempData } })
     }
     response.end()
 }

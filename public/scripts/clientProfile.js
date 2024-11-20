@@ -1,9 +1,19 @@
 const seconds = Number(document.querySelector('.timeout-seconds').getAttribute('value'))
-console.log(seconds)
+
+console.log('before timeout', seconds)
 setTimeout(async () => {
     await fetch('/deleteTempData', {method: 'POST'})
-    location.href = '/'
+    location.replace('/')
 }, seconds*1000);
+console.log('after timeout')
+const urls = document.querySelectorAll('.sidebar a');
+    [...urls].forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.preventDefault()
+            const url = e.target.getAttribute('href')
+            location.replace(url)
+        })
+    })
 
 const subBtn = document.querySelector('.subscription-btn')
 if (subBtn) {

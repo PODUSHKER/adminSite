@@ -19,7 +19,13 @@ Operation.belongsTo(Product)
 
 
 PlaceWork.hasMany(Worker);
+Worker.belongsTo(PlaceWork)
+
 Worker.hasMany(Client);
+Client.belongsTo(Worker)
+
+Worker.hasMany(Promo)
+Promo.belongsTo(Worker)
 
 Worker.hasMany(TempData);
 TempData.belongsTo(Worker)

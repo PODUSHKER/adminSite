@@ -1,4 +1,6 @@
 
+
+
 const searchForm = document.querySelector('.phone-search-form')
 searchForm.addEventListener('submit', async (e) => {
     e.preventDefault()
@@ -48,6 +50,6 @@ async function confirmCodeHandler(e) {
         document.getElementById('attemptCount').innerHTML = response['attemps']
     }
     else {
-        location.href = rawResponse.url
+        location.replace(rawResponse.url)
     }
 }

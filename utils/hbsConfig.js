@@ -38,6 +38,9 @@ const hbsConfig = expressHbs.engine({
         },
         getTime(date){
             return date.toLocaleDateString()
+        },
+        getMainTime(date){
+            return date.toLocaleTimeString().slice(0, -3)
         }
     }
 })

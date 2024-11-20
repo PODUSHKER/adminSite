@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser')
 const multer = require('multer')
 const isAuthenticate = require('./utils/isAuthenticate.js')
 const allowUrlsValidation = require('./utils/allowUrlsValidation.js')
+const initCookieParams = require('./utils/initCookieParams.js')
 
 
 const staticPath = path.join(__dirname, 'public')
@@ -35,7 +36,7 @@ async function init(){
     try{
 
         await sequelize.sync()
-        app.listen(80, process.env.ADDRESS, () => console.log('server started'))
+        app.listen(3000, () => console.log('server started'))
         main()
     }
     catch(err){
@@ -48,6 +49,7 @@ async function main(){
 
     app.use(isAuthenticate)
     app.use(allowUrlsValidation)
+    app.use(initCookieParams)
     
     app.use('', mainRouter)
     app.use('/api', apiToolRouter)

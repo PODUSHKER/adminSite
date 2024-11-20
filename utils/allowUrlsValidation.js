@@ -10,7 +10,8 @@ async function allowUrlsValidation(request, response, next) {
         '/api/resendCodeTool',
         '/api/confirmCodeTool'
     ]
-    if (request.body['workerId']) {
+    const worker = response.locals['thisWorker']
+    if (worker) {
         const activeTempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], isActive: true } })
         if (activeTempData) {
             const allowUrls = [
@@ -19,9 +20,9 @@ async function allowUrlsValidation(request, response, next) {
                 '/api/createSubscriptionTool',
                 '/api/deleteOneProduct',
                 '/api/updateDeductCode',
-                '/api/confirmDeductCode'
+                '/api/confirmDeductCode',
+                '/favicon.ico'
             ]
-            console.log('is active tempdata')
             if (!allowUrls.includes(request.originalUrl)) {
                 await TempData.destroy({ where: { id: activeTempData.id } })
             }
@@ -31,18 +32,18 @@ async function allowUrlsValidation(request, response, next) {
                 })
             }
         }
-    }
-
-
-    const worker = response.locals['thisWorker']
-    if (worker && worker.role === "Worker") {
-        if (workerUrls.includes(request.originalUrl)) {
-            next()
-            return
+        if (worker.role === "Worker") {
+            if (workerUrls.includes(request.originalUrl)) {
+                return next()
+            }
+            return response.redirect('/')
         }
-        response.redirect('/')
+        if (worker.role === 'Admin'){
+            return next()
+            
+        }
     }
-    next()
+    return next()
 }
 
 module.exports = allowUrlsValidation
