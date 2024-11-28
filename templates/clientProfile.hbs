@@ -15,8 +15,10 @@
             <input type="text" id="phone" name="phone" class="profile-input" value="{{client.phone}}">
 
             <label for="telegramId" class="profile-label">Телеграм:</label>
-            <input type="text" id="telegramId" name="telegramId" class="profile-input" value="@{{client.telegramId}}">
-
+            <input type="text" id="telegramId" name="telegramId" class="profile-input" value="{{client.telegramId}}">
+            {{#each errors}}
+            <p style="color:#f00">{{this.msg}}</p>
+            {{/each}}
             <button type="submit" class="btn profile-btn">Изменить</button>
             {{#if client.isBlock}}
             <button type="button" class="btn profile-btn unlock-btn lock-btn">Разблокировать</button>
@@ -32,7 +34,10 @@
             </h2>
             <div class="subscription-details">
                 <span class="subscription-name">{{promo.title}}</span>
-                <span class="subscription-end">До окончания: {{getDaysOver promo.endDate}} дней</span>
+                <span class="subscription-end">{{#if promo.isEnabled}}До окончания: {{getDaysOver promo.endDate}} дней{{else}}Период действия подписки истёк{{/if}}</span>
+                {{#if (not promo.isEnabled)}}
+                <button type="button" class="btn update-subscription-btn">Продлить подписку</button>
+                {{/if}}
             </div>
 
             <div class="products-section">
@@ -74,6 +79,5 @@
         </div>
     </div>
 </main>
-
 
 <script src="/scripts/clientProfile.js"></script>

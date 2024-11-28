@@ -1,53 +1,74 @@
 const seconds = Number(document.querySelector('.timeout-seconds').getAttribute('value'))
 
-console.log('before timeout', seconds)
 setTimeout(async () => {
-    await fetch('/deleteTempData', {method: 'POST'})
+    await fetch('/deleteTempData', { method: 'POST' })
     location.replace('/')
-}, seconds*1000);
-console.log('after timeout')
+}, seconds * 1000);
+
 const urls = document.querySelectorAll('.sidebar a');
-    [...urls].forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.preventDefault()
-            const url = e.target.getAttribute('href')
-            location.replace(url)
-        })
+[...urls].forEach(el => {
+    el.addEventListener('click', (e) => {
+        e.preventDefault()
+        const url = e.target.getAttribute('href')
+        location.replace(url)
     })
+})
+
 
 const subBtn = document.querySelector('.subscription-btn')
-if (subBtn) {
+if (subBtn){
     subBtn.addEventListener('click', async (e) => {
-        const { subscription, cofe, cola } = await (await fetch('/api/createSubscriptionTool', { method: 'POST' })).json()
-
+        const { subscription, products } = await (await fetch('/api/createSubscriptionTool', { method: 'POST' })).json()
+    
         subBtn.outerHTML =
             `
-                <div class="subscription-section">
-                    <h2>Статус: <span class="subscription-status">Активен</span></h2>
-                    <div class="subscription-details">
-                        <span class="subscription-name">${subscription.title}</span>
-                        <span class="subscription-end">До окончания: ${subscription.timeToLive} дней</span>
-                    </div>
-
-                    <div class="products-section">
-                        <div class="product-item">
-                            <span>${cofe.name} - ${cofe.quantity} шт.</span>
-                            <button type="button" id="${cofe.id}" class="btn deduct-btn">Списать</button>
+                    <div class="subscription-section">
+                        <h2>Статус: <span class="subscription-status">Активен</span></h2>
+                        <div class="subscription-details">
+                            <span class="subscription-name">${subscription.title}</span>
+                            <span class="subscription-end">До окончания: ${subscription.timeToLive} дней</span>
                         </div>
-                        <div class="product-item">
-                            <span>${cola.name} - ${cola.quantity} шт.</span>
-                            <button type="button" id="${cola.id}" class="btn deduct-btn">Списать</button>
+    
+                        <div class="products-section">
+                            ${products.reduce((acc, el) => acc += 
+                            `<div class="product-item">
+                                <span>${el.name} - ${el.quantity} шт.</span>
+                                <button type="button" id="product${el.id}" class="btn deduct-btn">Списать</button>
+                            </div>`, '')}
                         </div>
                     </div>
-                </div>
-                `
+                    `
         const deductBtns = document.querySelectorAll('.deduct-btn')
         for (let btn of deductBtns) {
             btn.addEventListener('click', deductButtonHandler)
         }
-
+    
     })
-    console.log(subBtn, 'penis')
+}
+
+const updateSubBtn = document.querySelector('.update-subscription-btn')
+if (updateSubBtn){
+    updateSubBtn.addEventListener('click', async (e) => {
+        const { subscription, products } = await (await fetch('/api/updateSubscriptionTool', { method: 'post' })).json()
+        document.querySelector('.subscription-section').outerHTML =
+                    `
+                    <div class="subscription-section">
+                        <h2>Статус: <span class="subscription-status">Активен</span></h2>
+                        <div class="subscription-details">
+                            <span class="subscription-name">${subscription.title}</span>
+                            <span class="subscription-end">До окончания: ${subscription.timeToLive} дней</span>
+                        </div>
+    
+                        <div class="products-section">
+                            ${products.reduce((acc, el) => acc += 
+                                `<div class="product-item">
+                                    <span>${el.name} - ${el.quantity} шт.</span>
+                                    <button type="button" id="product${el.id}" class="btn deduct-btn">Списать</button>
+                                </div>`, '')}
+                        </div>
+                    </div>
+                    `
+    })
 }
 
 const lockBtn = document.querySelector('.lock-btn')
@@ -59,6 +80,7 @@ lockBtn.addEventListener('click', async (e) => {
 const deductBtns = document.querySelectorAll('.deduct-btn')
 if (deductBtns.length) {
     for (let btn of deductBtns) {
+        console.log(btn)
         btn.addEventListener('click', deductButtonHandler)
     }
 }
@@ -83,6 +105,7 @@ async function confirmButtonHandler(e) {
     }
     else {
         const deductBtn = document.querySelector(`.products-section #product${productId} `)
+        console.log('deductBtn', deductBtn)
         const history = document.querySelector('.operations-history')
         const popUp = document.querySelector('.popup-overlay')
         popUp.classList.remove('active')
@@ -135,6 +158,7 @@ popUp.addEventListener('click', async (e) => {
 
 async function deductButtonHandler(e) {
     e.preventDefault()
+    console.log('im in deductButtonHandler')
     popUp.classList.add('active')
     const productId = e.target.id.replace(/[^0-9]/g, '')
     await fetch('/api/updateDeductCode', {
@@ -155,3 +179,5 @@ const confirmCodeButton = document.getElementById('confirm-code')
 confirmCodeButton.addEventListener('click', confirmButtonHandler)
 
 
+console.log('resendCode', resendCodeButton)
+console.log('confirmCode', confirmCodeButton)

@@ -82,13 +82,13 @@ const createClientValidators = [
             throw new Error('Введите номер телефона!')
         }
     }),
-    body('telegramId').notEmpty().custom(async (value, { req }) => {
+    body('telegramId').custom(async (value, { req }) => {
         if (value) {
             const isValid = value.match(/^[a-z0-9_-]+$/gi)
             if (isValid) {
                 const telegramId = isValid[0]
                 const client = await Client.findOne({ where: { telegramId } })
-                if (client) {
+                if (client && client.WorkerId) {
                     throw new Error('Такой телеграм ID уже занят!')
                 }
             }

@@ -17,7 +17,9 @@
 
             <label for="password" class="auth-label">Пароль:</label>
             <input type="password" id="password" name="password" placeholder="Введите пароль" class="auth-input">
-
+            {{#each errors}}
+            <p style="color:#f00">{{this.msg}}</p>
+            {{/each}}
             <button type="submit" class="btn auth-btn">Войти</button>
         </form>
     </div>

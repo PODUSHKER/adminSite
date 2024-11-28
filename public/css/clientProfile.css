@@ -268,3 +268,7 @@ body {
 #resend-code:hover {
     background-color: #0056b3;
 }
+
+.update-subscription-btn {
+    background-color: #28a745;
+}

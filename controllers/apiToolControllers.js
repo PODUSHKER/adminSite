@@ -131,13 +131,41 @@ exports.createSubscriptionTool = async (request, response) => {
         const endDate = today.setDate(today.getDate() + timeToLive)
         const promo = await new Promo({ title: 'Стандарт', price: 1500, discount: 10, timeToLive, endDate, WorkerId: tempData.WorkerId }).save()
         await Client.update({ PromoId: promo.id }, { where: { id: tempData.ClientId } })
+
+
         const cofe = await new Product({ name: 'Кофе' }).save()
         const cola = await new Product({ name: 'Кола' }).save()
         await PromoProduct.create({ PromoId: promo.id, ProductId: cofe.id })
         await PromoProduct.create({ PromoId: promo.id, ProductId: cola.id })
-        response.json({ subscription: promo, cofe, cola })
+
+        const products = [
+            cofe,
+            cola,
+        ]
+        response.json({ subscription: promo, products })
     }
     response.end()
+}
+
+exports.updateSubscriptionTool = async (request, response) => {
+    const promo = await Promo.findOne({ where: {WorkerId: request.body['workerId']}})
+    if (promo){
+        promo.isEnabled = true;
+        promo.endDate = new Date().setDate(new Date().getDate()+30);
+        const promoProducts = [...(await PromoProduct.findAll({where: {PromoId: promo.id}}))]
+        const products = [];
+        for (let el of promoProducts){
+            const product = await Product.findOne({where: {id: el.ProductId}})
+            product.quantity=5
+            await product.save()
+            products.push(product)
+        }
+            
+        
+        await promo.save()
+        return response.json({subscription: promo, products})
+    }
+    response.json({})
 }
 
 exports.deleteOneProduct = async (request, response) => {

@@ -1,22 +1,24 @@
 <main class="main-content">
-            <div class="registration-container">
-                <h1>Регистрация клиента</h1>
-                
-                <!-- Форма регистрации клиента -->
-                <form id="registerForm" action="/registerClients" method="POST">
-                    <label for="firstName" class="reg-label">Имя:</label>
-                    <input type="text" id="firstName" name="firstName" placeholder="Введите имя" class="reg-input" required>
+    <div class="registration-container">
+        <h1>Регистрация клиента</h1>
 
-                    <label for="lastName" class="reg-label">Фамилия:</label>
-                    <input type="text" id="lastName" name="lastName" placeholder="Введите фамилию" class="reg-input" required>
+        <!-- Форма регистрации клиента -->
+        <form id="registerForm" action="/registerClients" method="POST">
+            <label for="firstName" class="reg-label">Имя:</label>
+            <input type="text" id="firstName" name="firstName" placeholder="Введите имя" class="reg-input" >
 
-                    <label for="phone" class="reg-label">Телефон:</label>
-                    <input type="text" id="phone" name="phone" placeholder="Номер телефона" class="reg-input" required>
+            <label for="lastName" class="reg-label">Фамилия:</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Введите фамилию" class="reg-input" >
 
-                    <label for="telegramId" class="reg-label">Телеграм ID:</label>
-                    <input type="text" id="telegramId" name="telegramId" placeholder="Введите телеграм ID" class="reg-input">
+            <label for="phone" class="reg-label">Телефон:</label>
+            <input type="text" id="phone" name="phone" placeholder="Номер телефона" class="reg-input" >
 
-                    <button type="submit" class="btn reg-btn">Создать</button>
-                </form>
-            </div>
-        </main>
+            <label for="telegramId" class="reg-label">Телеграм ID:</label>
+            <input type="text" id="telegramId" name="telegramId" placeholder="Введите телеграм ID" class="reg-input">
+            {{#each errors}}
+            <p style="color:#f00">{{this.msg}}</p>
+            {{/each}}
+            <button type="submit" class="btn reg-btn">Создать</button>
+        </form>
+    </div>
+</main>

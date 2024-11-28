@@ -18,6 +18,7 @@ async function allowUrlsValidation(request, response, next) {
                 `/clientProfile/${activeTempData['ClientId']}`,
                 '/api/lockClientTool',
                 '/api/createSubscriptionTool',
+                '/api/updateSubscriptionTool',
                 '/api/deleteOneProduct',
                 '/api/updateDeductCode',
                 '/api/confirmDeductCode',

@@ -8,13 +8,13 @@
         <!-- Форма для редактирования информации о сотруднике -->
         <form class="employee-profile-form" enctype="multipart/form-data" method="post">
             <label for="firstName">Имя</label>
-            <input type="text" value="{{worker.firstName}}" id="firstName" name="firstName" required>
+            <input type="text" value="{{worker.firstName}}" id="firstName" name="firstName" >
 
             <label for="lastName">Фамилия</label>
-            <input type="text" value="{{worker.lastName}}" id="lastName" name="lastName" required>
+            <input type="text" value="{{worker.lastName}}" id="lastName" name="lastName" >
 
             <label for="phone">Номер телефона</label>
-            <input type="tel" value="{{worker.phone}}" id="phone" name="phone" required>
+            <input type="tel" value="{{worker.phone}}" id="phone" name="phone" >
 
             <label for="placeWork">Название магазина</label>
             <select name="placeWork" id="placeWork" style="margin-bottom: 50px">
@@ -25,7 +25,7 @@
             </select>
 
             <label for="telegramId">Телеграм (необязательно)</label>
-            <input type="text" id="telegramId" name="telegramId" value="@{{worker.telegramId}}">
+            <input type="text" id="telegramId" name="telegramId" value="{{worker.telegramId}}">
 
             <!-- Кнопка для изменения информации -->
             <button type="submit" class="update-button">Изменить</button>
@@ -35,10 +35,13 @@
         <h2>Сменить пароль</h2>
         <form class="password-change-form" method="post">
             <label for="password">Новый пароль</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" name="password" >
 
             <label for="passwordConfirm">Подтвердить новый пароль</label>
-            <input type="password" id="passwordConfirm" name="passwordConfirm" required>
+            <input type="password" id="passwordConfirm" name="passwordConfirm" >
+            {{#each errors}}
+            <p style="color:#f00">{{this.msg}}</p>
+            {{/each}}
             <button type="submit" class="update-button">Сменить пароль</button>
         </form>
 

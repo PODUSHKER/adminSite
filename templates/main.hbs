@@ -1,25 +1,25 @@
 
         <main class="main-content">
-            {{!-- <section class="block">
-                <h3>Всего регистраций: <span>123</span></h3>
+            <section class="block">
+                <h3>Всего регистраций: <span>{{clients.length}}</span></h3>
                 <div class="registrations">
-                    <div class="registration-item">Регистрация 1</div>
-                    <div class="registration-item">Регистрация 2</div>
-                    <div class="registration-item">Регистрация 3</div>
+                    {{#each clients}}
+                    <div class="registration-item">{{this.firstName}} {{this.lastName}} {{getMainTime this.createdAt}}</div>
+                    {{/each}}
                 </div>
             </section>
 
             <section class="block">
                 <h3>Всего продаж за сегодня</h3>
-                <p>Подписок продано: <span>25</span></p>
-                <p>Прочих продаж: <span>15</span></p>
-                <p>Итого: <span>40</span></p>
+                <p>Подписок продано: <span>{{promos.length}}</span></p>
+                {{!-- <p>Прочих продаж: <span>15</span></p>
+                <p>Итого: <span>40</span></p> --}}
             </section>
 
             <section class="block">
                 <h3>Топ сотрудников</h3>
-                <div class="employee-item">Иван Иванов — 20 продаж</div>
-                <div class="employee-item">Мария Смирнова — 15 продаж</div>
-                <div class="employee-item">Петр Сидоров — 10 продаж</div>
-            </section> --}}
+                {{#each topWorkers}}
+                <div class="employee-item">{{this.workerFirstName}} {{this.workerLastName}} — {{this.sells}} продаж</div>
+                {{/each}}
+            </section>
         </main>

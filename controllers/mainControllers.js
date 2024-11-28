@@ -91,11 +91,6 @@ exports.getClientProfile = async (request, response) => {
             }
             products = products.filter(el => el.quantity > 0)
         }
-        else {
-            for (let el of promoProduct) {
-                await Product.destroy({ where: { id: el.ProductId } })
-            }
-        }
     }
     let operations = await Operation.findAll({ where: { ClientId: client.id }, include: [Worker, Product] })
     operations = operations.length ? operations : null;
@@ -166,12 +161,11 @@ exports.postAuth = async (request, response) => {
                     { expiresIn: '24h' }
                 )
                 await response.cookie('token', `Bearer ${token}`)
-                response.redirect('/')
-                return
+                return response.redirect('/')
             }
         }
     }
-    response.redirect('/auth')
+    return response.redirect('/auth')
 
 }
 
@@ -190,7 +184,7 @@ exports.postRegisterClients = async (request, response) => {
     const errors = validationResult(request).errors
     if (errors.length) {
         response.cookie('errors', errors)
-        response.redirect(request.originalUrl)
+        return response.redirect(request.originalUrl)
     }
     else {
         const client = await Client.findOne({ where: { telegramId } })
@@ -208,10 +202,10 @@ exports.postRegisterClients = async (request, response) => {
             let tempData = await TempData.findOne({ where: { isActive: true } })
             if (!tempData) {
                 tempData = await new TempData({ ClientId: client.id, WorkerId: worker.id, isActive: true }).save()
-                response.redirect(`/clientProfile/${client.id}`)
+                return response.redirect(`/clientProfile/${client.id}`)
             }
         }
-        response.redirect(`/`)
+        return response.redirect(`/`)
     }
 }
 
