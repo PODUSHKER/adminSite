@@ -25,7 +25,7 @@ const Worker = sequelize.define('Worker', {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
-    }, 
+    },
     telegramId: {
         type: DataTypes.STRING,
         defaultValue: ''

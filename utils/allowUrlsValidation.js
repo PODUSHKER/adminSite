@@ -17,7 +17,7 @@ async function allowUrlsValidation(request, response, next) {
             const allowUrls = [
                 `/clientProfile/${activeTempData['ClientId']}`,
                 '/api/lockClientTool',
-                '/api/createSubscriptionTool',
+                '/api/registerSubscriptionTool',
                 '/api/updateSubscriptionTool',
                 '/api/deleteOneProduct',
                 '/api/updateDeductCode',
@@ -39,9 +39,9 @@ async function allowUrlsValidation(request, response, next) {
             }
             return response.redirect('/')
         }
-        if (worker.role === 'Admin'){
+        if (worker.role === 'Admin') {
             return next()
-            
+
         }
     }
     return next()

@@ -35,7 +35,7 @@ async function resendHandler(e) {
 
 async function confirmCodeHandler(e) {
     const inCode = document.getElementById('smsCode')
-    console.log('response start', inCode)
+
     const rawResponse = await fetch('/api/confirmCodeTool', {
         method: 'post',
         headers: {
@@ -44,8 +44,8 @@ async function confirmCodeHandler(e) {
         body: JSON.stringify({ code: inCode.value })
     })
     if (!rawResponse.redirected) {
-        console.log(rawResponse)
-        console.log('im here')
+
+
         const response = await rawResponse.json()
         document.getElementById('attemptCount').innerHTML = response['attemps']
     }

@@ -1,0 +1,16 @@
+<div class="main-content">
+    <h1 class="page-title">Список подписок</h1>
+    <div class="subscriptions-list">
+        {{#each subscriptions}}
+        {{!-- <a href="/subscriptions/{{this.id}}" class="subscription-item">
+            {{this.title}}
+        </a> --}}
+        <div class="employee-card">
+            <span class="employee-name">{{this.title}}</span>
+            <a href="/deleteSubscription/{{this.id}}" class="btn">Удалить</a>
+        </div>
+        {{/each}}
+
+        <!-- Здесь добавляются элементы через серверный рендеринг -->
+    </div>
+</div>

@@ -1,5 +1,5 @@
 const { defaultValueSchemable } = require('sequelize/lib/utils')
-const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 const { all } = require('../routes/mainRoutes.js')
 
 const TempData = sequelize.define('TempData', {

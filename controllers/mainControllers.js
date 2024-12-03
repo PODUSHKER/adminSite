@@ -1,27 +1,38 @@
 
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { Client, PlaceWork, Worker, TempData, Promo, Product, PromoProduct, Operation } = require('../models/associations.js')
+const { Client, PlaceWork, Worker, TempData, Promo, Product, PromoProduct, Operation, ProductToSell, SelledPromo } = require('../models/associations.js')
 const bot = require('../bots/confirmBot.js')
 const { validationResult } = require('express-validator')
+const { where } = require('sequelize')
 
 exports.getMain = async (request, response) => {
     const worker = response.locals['thisWorker']
     if (worker) {
         if (worker.role === 'Admin') {
             const clients = await Client.findAll({})
-            const allPromos = [...(await Promo.findAll({}))]
+            const allPromos = [...(await SelledPromo.findAll({}))]
             const promos = allPromos.filter(el => new Date().toLocaleDateString() === el.createdAt.toLocaleDateString())
-            const sortWorkers = [...await Worker.findAll({})].sort(async (a, b) => {
-                const bigger = (await Promo.findAll({ where: { WorkerId: b.id } })).length
-                const smaller = (await Promo.findAll({ where: { WorkerId: b.id } })).length
-                return bigger - smaller
-            })
+            const workers = [...await Worker.findAll({})];
+            for (let i = 0; i < workers.length; i++) {
+                const promos = await SelledPromo.findAll({ where: { WorkerId: workers[i].id } });
+
+                if (promos.length) {
+                    workers[i] = { selledPromosQuantity: promos.length, worker: workers[i] }
+                    continue;
+                }
+                workers.splice(i, 1);
+                i--;
+            }
+
+            const sortWorkers = workers.sort((a, b) => b.selledPromosQuantity - a.selledPromosQuantity).map(el => el['worker']);
+
+
             topQuantity = 3;
             const topWorkers = sortWorkers.slice(0, topQuantity)
             const formatedTopWorkers = []
             for (let i of topWorkers) {
-                const sells = (await Promo.findAll({ where: { WorkerId: i.id } })).length
+                const sells = (await SelledPromo.findAll({ where: { WorkerId: i.id } })).length
                 formatedTopWorkers.push({ workerFirstName: i.firstName, workerLastName: i.lastName, sells })
             }
             response.render('main.hbs', { cssFile: 'main', title: 'Главная', topWorkers: formatedTopWorkers, promos, clients })
@@ -46,9 +57,10 @@ exports.getWorkers = async (request, response) => {
 }
 
 exports.getWorkerProfile = async (request, response) => {
-    console.log()
+
     const worker = await Worker.findOne({ where: { id: request.params['id'] }, include: PlaceWork })
-    const placeWork = worker.PlaceWork
+    const placeWork = worker.PlaceWork ?? { id: null, name: 'Не выбрано' };
+
     const placeWorks = [...(await PlaceWork.findAll({}))].filter(el => el.id !== placeWork.id)
     response.render('workerProfile.hbs', { cssFile: 'workerProfile', title: 'Профиль сотрудника', worker, placeWork, placeWorks })
 }
@@ -65,7 +77,7 @@ exports.getClients = async (request, response) => {
 }
 
 exports.getClientProfile = async (request, response) => {
-    const client = await Client.findOne({ where: { id: request.params['id'] }, include: Promo })
+    const client = await Client.findOne({ where: { id: request.params['id'] }, include: SelledPromo })
     if (response.locals['thisWorker'].role === 'Admin') {
         const tempData = await TempData.findOne({ where: { WorkerId: request.body['workerId'], ClientId: client.id, isActive: true } })
         if (!tempData) {
@@ -73,30 +85,31 @@ exports.getClientProfile = async (request, response) => {
         }
     }
     let products, promo, promoProduct;
-    if (client['PromoId']) {
-        promo = client.Promo
+    if (client['SelledPromoId']) {
+        promo = client.SelledPromo
 
         if (new Date() >= promo.endDate) {
             promo.isEnabled = false
             await promo.save()
         }
 
-        promoProduct = [...(await PromoProduct.findAll({ where: { PromoId: promo.id } }))]
+        promoProduct = [...(await PromoProduct.findAll({ where: { SelledPromoId: promo.id } }))]
 
         if (promo.isEnabled) {
             products = []
             for (let el of promoProduct) {
-                const product = await Product.findOne({ where: { id: el.ProductId } })
+                const product = await ProductToSell.findOne({ where: { id: el.ProductToSellId } })
                 products.push(product)
             }
             products = products.filter(el => el.quantity > 0)
         }
     }
-    let operations = await Operation.findAll({ where: { ClientId: client.id }, include: [Worker, Product] })
+    let operations = await Operation.findAll({ where: { ClientId: client.id }, include: [Worker, ProductToSell] })
     operations = operations.length ? operations : null;
 
     const seconds = Number(process.env.TIMEOUT_SECONDS)
-    response.render('clientProfile.hbs', { cssFile: 'clientProfile', title: 'Клиенты', client, products, promo, operations, seconds })
+    const subscriptions = await Promo.findAll({})
+    return response.render('clientProfile.hbs', { cssFile: 'clientProfile', title: 'Клиенты', client, products, promo, operations, seconds, subscriptions })
 }
 
 exports.postClientProfile = async (request, response) => {
@@ -169,7 +182,8 @@ exports.postAuth = async (request, response) => {
 
 }
 
-exports.logout = (request, response) => {
+exports.logout = async (request, response) => {
+    await TempData.destroy({ where: {} })
     response.clearCookie('token')
     response.redirect('/auth')
 }
@@ -224,4 +238,39 @@ exports.postCreatePlaceWork = async (request, response) => {
         await PlaceWork.create({ name, address })
     }
     response.redirect('/createPlaceWork')
+}
+
+
+exports.getCreateSubscription = async (request, response) => {
+    const products = await Product.findAll({ where: { PromoId: null } })
+    response.render('createSubscription.hbs', { cssFile: 'createSubscription', title: 'Создать подписку', products })
+}
+
+exports.postCreateSubscription = async (request, response) => {
+    const errors = validationResult(request).errors
+    if (errors.length) {
+        response.cookie('errors', errors)
+        return response.redirect(request.originalUrl)
+    }
+    const timeToLive = 30;
+    const discount = 10;
+    const { price, title } = request.body;
+    const promo = await new Promo({ discount, price, timeToLive, title }).save()
+    await Product.update({ PromoId: promo.id }, { where: { PromoId: null } });
+    return response.redirect('/subscriptions')
+}
+
+exports.getSubscriptions = async (request, response) => {
+    const subscriptions = await Promo.findAll({})
+    response.render('subscriptions.hbs', { cssFile: 'subscriptions', title: 'Все подписки', subscriptions })
+}
+
+exports.deleteSubscription = async (request, response) => {
+    const PromoId = request.params['id'];
+    await Product.destroy({ where: { PromoId } })
+    await SelledPromo.destroy({ where: { PromoId } })
+    await Promo.destroy({ where: { id: PromoId } })
+    await ProductToSell.destroy({ where: { ProductId: null } })
+    await Operation.destroy({ where: { ProductToSellId: null } })
+    response.redirect('/subscriptions')
 }

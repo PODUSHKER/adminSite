@@ -1,5 +1,5 @@
 const { UniqueConstraintError } = require('sequelize')
-const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 
 const Client = sequelize.define('Client', {
 

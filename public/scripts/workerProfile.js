@@ -2,7 +2,7 @@ const editProfileForm = document.querySelector('.employee-profile-form')
 editProfileForm.addEventListener('submit', async (e) => {
     e.preventDefault()
     const formData = new FormData(editProfileForm);
-    await fetch('/api/updateWorkerTool/{{worker.id}}', {
+    await fetch(`/api/updateWorkerTool/${workerId}`, {
         method: 'POST',
         body: formData,
     })
@@ -14,26 +14,26 @@ const editPasswordForm = document.querySelector('.password-change-form')
 editPasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault()
     const formData = new FormData(editPasswordForm);
-    console.log('im here', formData)
-    if (formData.get('password') === formData.get('passwordConfirm')){
+
+    if (formData.get('password') === formData.get('passwordConfirm')) {
         await fetch('/api/updateWorkerPasswordTool/{{worker.id}}', {
             method: 'POST',
             body: formData,
         })
-        if (editPasswordForm.firstElementChild.tagName === 'P'){
+        if (editPasswordForm.firstElementChild.tagName === 'P') {
             editPasswordForm.firstElementChild.outerHTML = '<p style="color:#0f0">Пароль успешно изменён!</p>'
         }
-        else{
+        else {
             editPasswordForm.insertAdjacentHTML('afterbegin', '<p style="color:#0f0">Пароль успешно изменён!</p>')
 
         }
     }
-    else{
-        console.log(editPasswordForm.firstElementChild.tagName)
-        if (editPasswordForm.firstElementChild.tagName === 'P'){
+    else {
+
+        if (editPasswordForm.firstElementChild.tagName === 'P') {
             editPasswordForm.firstElementChild.outerHTML = '<p style="color:#f00">Пароли не совпадают!</p>'
         }
-        else{
+        else {
             editPasswordForm.insertAdjacentHTML('afterbegin', '<p style="color:#f00">Пароли не совпадают!</p>')
         }
     }
@@ -41,7 +41,7 @@ editPasswordForm.addEventListener('submit', async (e) => {
 
 
 const firedButton = document.querySelector('.fire-button')
-if(firedButton){
+if (firedButton) {
     firedButton.addEventListener('click', async (e) => {
         await fetch(`/api/blockWorkerTool/${e.target.id}`, {
             method: 'POST'

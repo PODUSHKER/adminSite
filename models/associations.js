@@ -7,40 +7,62 @@ const Operation = require('./Operation.js')
 const PlaceWork = require('./PlaceWork.js')
 const TempData = require('./TempData.js')
 const PromoProduct = require('./PromoProduct.js')
+const SelledPromo = require('./SelledPromo.js')
+const ProductToSell = require('./ProductToSell.js')
 
-Promo.hasMany(Client);
-Client.belongsTo(Promo)
+SelledPromo.hasMany(Client);
+Client.belongsTo(SelledPromo, { onDelete: 'SET NULL' })
 
-Promo.belongsToMany(Product, {through: PromoProduct});
-Product.belongsToMany(Promo, {through: PromoProduct});
+SelledPromo.belongsToMany(ProductToSell, { through: PromoProduct });
+ProductToSell.belongsToMany(SelledPromo, { through: PromoProduct });
 
-Product.hasMany(Operation)
-Operation.belongsTo(Product)
+ProductToSell.hasMany(Operation)
+Operation.belongsTo(ProductToSell, { foreignKey: { onDelete: 'CASCADE' } })
 
 
 PlaceWork.hasMany(Worker);
-Worker.belongsTo(PlaceWork)
+Worker.belongsTo(PlaceWork, { foreignKey: { allowNull: true }, onDelete: 'SET NULL' })
 
 Worker.hasMany(Client);
-Client.belongsTo(Worker)
+Client.belongsTo(Worker, { onDelete: 'SET NULL' })
 
-Worker.hasMany(Promo)
-Promo.belongsTo(Worker)
+Promo.hasMany(SelledPromo)
+SelledPromo.belongsTo(Promo, { onDelete: 'CASCADE' })
+
+Worker.hasMany(SelledPromo)
+SelledPromo.belongsTo(Worker) //TODO
 
 Worker.hasMany(TempData);
-TempData.belongsTo(Worker)
+TempData.belongsTo(Worker, { onDelete: 'CASCADE' })
 
 Worker.hasMany(Operation)
-Operation.belongsTo(Worker)
+Operation.belongsTo(Worker, { onDelete: 'CASCADE' })
 
 Client.hasMany(TempData);
-TempData.belongsTo(Client)
+TempData.belongsTo(Client, { onDelete: 'CASCADE' })
 
-Product.hasMany(TempData)
-TempData.belongsTo(Product)
+ProductToSell.hasMany(TempData)
+TempData.belongsTo(ProductToSell, { onDelete: 'CASCADE' })
 
 Client.hasMany(Operation)
-Operation.belongsTo(Client)
+Operation.belongsTo(Client, { onDelete: 'CASCADE' })
+
+Product.hasMany(ProductToSell);
+ProductToSell.belongsTo(Product, { onDelete: 'CASCADE' })
+
+Promo.hasMany(Product)
+Product.belongsTo(Promo, { onDelete: 'CASCADE' })
 
 
-module.exports = { Promo, Product, Client, Worker, PlaceWork, TempData, PromoProduct, Operation };
+module.exports = {
+    SelledPromo,
+    ProductToSell,
+    Client,
+    Worker,
+    PlaceWork,
+    TempData,
+    PromoProduct,
+    Operation,
+    Promo,
+    Product
+};

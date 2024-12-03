@@ -7,7 +7,7 @@ const placeWorkValidators = [
         if (value) {
             const placeWork = await PlaceWork.findOne({ where: { name: value } })
             if (placeWork) {
-                throw new Error('Такое место работы уже существует!')
+                throw new Error('Такое название уже занято!')
             }
         }
         else {
@@ -18,7 +18,7 @@ const placeWorkValidators = [
         if (value) {
             const placeWork = await PlaceWork.findOne({ where: { address: value } })
             if (placeWork) {
-                throw new Error('Такое место работы уже существует!')
+                throw new Error('Такой адрес уже занят!')
             }
         }
         else {
@@ -33,7 +33,7 @@ const createWorkerValidators = [
     body('lastName').notEmpty().withMessage('Введите фамилию!'),
     body('phone').custom(async (value, { req }) => {
         if (value) {
-            const isValid = value.match(/\+7\d{10}/)
+            const isValid = value.match(/^\+7[0-9]{10}$/)
             if (isValid) {
                 const phone = isValid[0]
                 const worker = await Worker.findOne({ where: { phone } })
@@ -63,10 +63,9 @@ const createWorkerValidators = [
 
 const createClientValidators = [
     body('firstName').notEmpty().withMessage('Введите имя!'),
-    body('lastName').notEmpty().withMessage('Введите фамилию!'),
     body('phone').custom(async (value, { req }) => {
         if (value) {
-            const isValid = value.match(/\+7\d{10}/)
+            const isValid = value.match(/^\+7[0-9]{10}$/)
             if (isValid) {
                 const phone = isValid[0]
                 const client = await Client.findOne({ where: { phone } })
@@ -107,11 +106,14 @@ const editWorkerProfileValidators = [
     body('firstName').notEmpty().withMessage('Введите имя!'),
     body('lastName').notEmpty().withMessage('Введите фамилию!'),
     body('phone').custom(async (value, { req }) => {
+
         if (value) {
-            const isValid = value.match(/\+7\d{10}/)
+
+            const isValid = value.match(/^\+7[0-9]{10}$/)
+
             if (isValid) {
                 const phone = isValid[0]
-                const thisWorker = await Worker.findOne({where: {id: req.body['workerId']}})
+                const thisWorker = await Worker.findOne({ where: { id: req.params['id'] } })
                 const worker = await Worker.findOne({ where: { phone } })
                 if (worker && worker.id !== thisWorker.id) {
                     throw new Error('Номер телефона уже занят!')
@@ -124,6 +126,7 @@ const editWorkerProfileValidators = [
         else {
             throw new Error('Введите номер телефона!')
         }
+
     }),
 ]
 
@@ -144,10 +147,10 @@ const editWorkerPasswordValidators = [
 const editClientValidators = [
     body('phone').custom(async (value, { req }) => {
         if (value) {
-            const isValid = value.match(/\+7\d{10}/)
+            const isValid = value.match(/^\+7[0-9]{10}$/)
             if (isValid) {
                 const phone = isValid[0]
-                const tempData = await TempData.findOne({where: {WorkerId: req.body['workerId'], isActive: true}, include: Client})
+                const tempData = await TempData.findOne({ where: { WorkerId: req.body['workerId'], isActive: true }, include: Client })
                 const client = await Client.findOne({ where: { phone } })
                 if (client && tempData.Client.id !== client.id) {
                     throw new Error('Номер телефона уже занят!')
@@ -166,7 +169,7 @@ const editClientValidators = [
             const isValid = value.match(/^[a-z0-9_-]+$/gi)
             if (isValid) {
                 const telegramId = isValid[0]
-                const tempData = await TempData.findOne({where: {WorkerId: req.body['workerId'], isActive: true}, include: Client})
+                const tempData = await TempData.findOne({ where: { WorkerId: req.body['workerId'], isActive: true }, include: Client })
                 const client = await Client.findOne({ where: { telegramId } })
                 if (client && tempData.Client.id !== client.id) {
                     throw new Error('Такой телеграм ID уже занят!')
@@ -205,14 +208,19 @@ const loginWorkerValidators = [
                 }
             }
         }
-        else{
+        else {
             throw new Error('Введите пароль!')
         }
     })
 ]
 
+const createSubscription = [
+    body('title').notEmpty().withMessage('Введите название подписки!'),
+    body('price').notEmpty().withMessage('Введите цену подписки!'),
+]
 
 module.exports = {
+    createSubscription,
     placeWorkValidators,
     createClientValidators,
     createWorkerValidators,

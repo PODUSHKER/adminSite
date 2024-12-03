@@ -1,12 +1,20 @@
-const { sequelize, DataTypes } = require('../utils/dbSettings.js')
-const Client = require('./Client.js')
-const Product = require('./Product.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js');
 
-const Promo = sequelize.define('Promo', {
+const SelledPromo = sequelize.define('SelledPromo', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+        allowNull: false
+    },
+
+    isEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+
+    endDate: {
+        type: DataTypes.DATE,
         allowNull: false
     },
     title: {
@@ -28,6 +36,4 @@ const Promo = sequelize.define('Promo', {
     },
 })
 
-
-
-module.exports = Promo
+module.exports = SelledPromo;

@@ -5,26 +5,26 @@
         <h1>{{client.firstName}} {{client.lastName}}</h1>
 
         <form action="/clientProfile/{{client.id}}" method="post">
-            <label for="firstName" class="profile-label">Имя:</label>
+            <label for="firstName" class="profile-label">*Имя:</label>
             <input type="text" id="firstName" name="firstName" class="profile-input" value="{{client.firstName}}">
 
             <label for="lastName" class="profile-label">Фамилия:</label>
             <input type="text" id="lastName" name="lastName" class="profile-input" value="{{client.lastName}}">
 
-            <label for="phone" class="profile-label">Телефон:</label>
+            <label for="phone" class="profile-label">*Телефон:</label>
             <input type="text" id="phone" name="phone" class="profile-input" value="{{client.phone}}">
 
-            <label for="telegramId" class="profile-label">Телеграм:</label>
+            <label for="telegramId" class="profile-label">*Телеграм:</label>
             <input type="text" id="telegramId" name="telegramId" class="profile-input" value="{{client.telegramId}}">
             {{#each errors}}
             <p style="color:#f00">{{this.msg}}</p>
             {{/each}}
             <button type="submit" class="btn profile-btn">Изменить</button>
-            {{#if client.isBlock}}
+            {{!-- {{#if client.isBlock}}
             <button type="button" class="btn profile-btn unlock-btn lock-btn">Разблокировать</button>
             {{else}}
             <button type="button" class="btn profile-btn block-btn lock-btn">Заблокировать</button>
-            {{/if}}
+            {{/if}} --}}
         </form>
 
         <!-- Раздел подписки -->
@@ -34,7 +34,8 @@
             </h2>
             <div class="subscription-details">
                 <span class="subscription-name">{{promo.title}}</span>
-                <span class="subscription-end">{{#if promo.isEnabled}}До окончания: {{getDaysOver promo.endDate}} дней{{else}}Период действия подписки истёк{{/if}}</span>
+                <span class="subscription-end">{{#if promo.isEnabled}}До окончания: {{getDaysOver promo.endDate}}
+                    дней{{else}}Период действия подписки истёк{{/if}}</span>
                 {{#if (not promo.isEnabled)}}
                 <button type="button" class="btn update-subscription-btn">Продлить подписку</button>
                 {{/if}}
@@ -50,6 +51,13 @@
             </div>
         </div>
         {{else}}
+        <div style="margin-top: 15px;">
+            <select name="subscription" id="subscriptions">
+                {{#each subscriptions}}
+                <option value="{{this.id}}">{{this.title}}</option>
+                {{/each}}
+            </select>
+        </div>
         <button type="button" class="btn subscription-btn">Оформить подписку</button>
         {{/if}}
 
@@ -60,7 +68,7 @@
             {{#each operations}}
             <div class="operation-item">
                 <span>Дата: {{getTime this.createdAt}}</span>
-                <span>Товар: {{this.Product.name}}</span>
+                <span>Товар: {{this.ProductToSell.name}}</span>
                 <span>Сотрудник: {{this.Worker.firstName}} {{this.Worker.lastName}}</span>
             </div>
             {{/each}}

@@ -1,5 +1,5 @@
 const { options } = require('../routes/mainRoutes.js');
-const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 const Worker = require('./Worker.js')
 
 

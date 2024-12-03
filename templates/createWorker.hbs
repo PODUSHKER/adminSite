@@ -5,16 +5,16 @@
 
         <!-- Форма для создания сотрудника -->
         <form class="employee-form" method="post" action="">
-            <label for="first-name">Имя</label>
+            <label for="first-name">Имя*</label>
             <input type="text" id="first-name" name="firstName">
 
-            <label for="last-name">Фамилия</label>
+            <label for="last-name">Фамилия*</label>
             <input type="text" id="last-name" name="lastName">
 
-            <label for="phone">Номер телефона</label>
+            <label for="phone">Номер телефона*</label>
             <input type="tel" id="phone" name="phone">
 
-            <label for="placeWork">Название магазина</label>
+            <label for="placeWork">Название магазина*</label>
             <select name="placeWork" id="placeWork" style="margin-bottom: 50px">
                 {{#each placeWorks}}
                 <option value="{{this.id}}">{{this.name}}</option>
@@ -24,10 +24,10 @@
             <label for="telegram">Телеграм (необязательно)</label>
             <input type="text" id="telegram" name="telegramId">
 
-            <label for="password">Пароль</label>
+            <label for="password">Пароль*</label>
             <input type="password" id="password" name="password">
 
-            <label for="confirm-password">Подтверждение пароля</label>
+            <label for="confirm-password">Подтверждение пароля*</label>
             <input type="password" id="confirmPassword" name="confirmPassword">
             {{#each errors}}
             <p style="color:#f00">{{this.msg}}</p>

@@ -18,13 +18,17 @@ apiToolRouter.post('/confirmCodeTool', apiToolControllers.confirmCodeTool)
 
 apiToolRouter.post('/lockClientTool', apiToolControllers.lockClientTool)
 
-apiToolRouter.post('/createSubscriptionTool', apiToolControllers.createSubscriptionTool)
+apiToolRouter.post('/registerSubscriptionTool', apiToolControllers.registerSubscriptionTool)
 apiToolRouter.post('/updateSubscriptionTool', apiToolControllers.updateSubscriptionTool)
+
+apiToolRouter.post('/createProductTool', apiToolControllers.createProductTool)
 
 apiToolRouter.post('/deleteOneProduct', apiToolControllers.deleteOneProduct)
 apiToolRouter.post('/updateDeductCode', apiToolControllers.updateDeductCode)
 apiToolRouter.post('/confirmDeductCode', apiToolControllers.confirmDeductCode)
 apiToolRouter.post('/deleteTempData', apiToolControllers.deleteTempData)
+
+apiToolRouter.post('/deleteProduct/:id', apiToolControllers.deleteParentProduct)
 
 
 module.exports = apiToolRouter

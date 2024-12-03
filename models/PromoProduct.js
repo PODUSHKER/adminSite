@@ -1,4 +1,4 @@
-const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 
 const PromoProduct = sequelize.define('PromoProduct', {
     id: {
@@ -7,7 +7,7 @@ const PromoProduct = sequelize.define('PromoProduct', {
         autoIncrement: true,
         allowNull: false
     }
-}, {timestamps: false})
+}, { timestamps: false })
 
 
 module.exports = PromoProduct;

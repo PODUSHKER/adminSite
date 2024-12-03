@@ -1,4 +1,4 @@
-const {sequelize, DataTypes} = require('../utils/dbSettings.js')
+const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 
 const Operation = sequelize.define('Operation', {
 

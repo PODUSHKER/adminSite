@@ -7,16 +7,16 @@
         {{/if}}
         <!-- Форма для редактирования информации о сотруднике -->
         <form class="employee-profile-form" enctype="multipart/form-data" method="post">
-            <label for="firstName">Имя</label>
+            <label for="firstName">Имя*</label>
             <input type="text" value="{{worker.firstName}}" id="firstName" name="firstName" >
 
-            <label for="lastName">Фамилия</label>
+            <label for="lastName">Фамилия*</label>
             <input type="text" value="{{worker.lastName}}" id="lastName" name="lastName" >
 
-            <label for="phone">Номер телефона</label>
+            <label for="phone">Номер телефона*</label>
             <input type="tel" value="{{worker.phone}}" id="phone" name="phone" >
 
-            <label for="placeWork">Название магазина</label>
+            <label for="placeWork">Название магазина*</label>
             <select name="placeWork" id="placeWork" style="margin-bottom: 50px">
                 <option value="{{placeWork.id}}" selected>{{placeWork.name}}</option>
                 {{#each placeWorks}}
@@ -26,7 +26,9 @@
 
             <label for="telegramId">Телеграм (необязательно)</label>
             <input type="text" id="telegramId" name="telegramId" value="{{worker.telegramId}}">
-
+            {{#each errors}}
+            <p style="color:#f00">{{this.msg}}</p>
+            {{/each}}
             <!-- Кнопка для изменения информации -->
             <button type="submit" class="update-button">Изменить</button>
         </form>
@@ -54,5 +56,5 @@
     </div>
 </main>
 
-
+<script>const workerId = '{{worker.id}}'</script>
 <script src="/scripts/workerProfile.js"></script>

@@ -1,6 +1,6 @@
 const { sequelize, DataTypes } = require('../utils/dbSettings.js')
 
-const Product = sequelize.define('Product', {
+const ProductToSell = sequelize.define('ProductToSell', {
 
     id: {
         type: DataTypes.INTEGER,
@@ -8,17 +8,18 @@ const Product = sequelize.define('Product', {
         autoIncrement: true,
         allowNull: false
     },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
+
     quantity: {
         type: DataTypes.INTEGER,
         defaultValue: 5
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
 
 })
 
 
 
-module.exports = Product
+module.exports = ProductToSell

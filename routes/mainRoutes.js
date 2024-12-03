@@ -6,7 +6,8 @@ const {
     createClientValidators,
     editClientValidators,
     loginWorkerValidators,
-    placeWorkValidators
+    placeWorkValidators,
+    createSubscription
 } = require('../utils/validators.js')
 
 mainRouter.get('', mainControllers.getMain)
@@ -32,5 +33,12 @@ mainRouter.post('/registerClients', createClientValidators, mainControllers.post
 
 mainRouter.get('/createPlaceWork', mainControllers.getCreatePlaceWork)
 mainRouter.post('/createPlaceWork', placeWorkValidators, mainControllers.postCreatePlaceWork)
+
+mainRouter.get('/createSubscription', mainControllers.getCreateSubscription)
+mainRouter.post('/createSubscription', createSubscription, mainControllers.postCreateSubscription)
+
+mainRouter.get('/subscriptions', mainControllers.getSubscriptions)
+
+mainRouter.get('/deleteSubscription/:id', mainControllers.deleteSubscription)
 
 module.exports = mainRouter
